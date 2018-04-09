@@ -1,0 +1,217 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sn_cmp_rb_resourcescript">
+    <sn_cmp_rb_resourcescript action="INSERT_OR_UPDATE">
+        <name>Discover_Puppet_Environments </name>
+        <resource display_value="Puppet Enterprise">9999b1d6db1d1300cc9b2f0e0b961973</resource>
+        <script>function processResponse(response, cloudServiceAccountId, ldc) { &#13;
+&#13;
+    var PuppetModelString = []; &#13;
+&#13;
+    var discoveryResponse =global.JSON.parse(response); &#13;
+&#13;
+    gs.info("^*^*^ Puppet Environment Discovery Response ^*^*^"+response); &#13;
+&#13;
+    var respIndex =0; &#13;
+&#13;
+    var tableName = ""; &#13;
+&#13;
+     &#13;
+&#13;
+    //environment &#13;
+&#13;
+    var environmentResponse = discoveryResponse.environments; &#13;
+&#13;
+    for(respIndex= 0, environments_size = environmentResponse.length; respIndex &lt;environments_size ; respIndex++){ &#13;
+&#13;
+         &#13;
+&#13;
+        //hosting table = Enterprise for Environment &#13;
+&#13;
+        tableName = "x_snc_testpuppetap_u_cmdb_ci_puppet_enterprise_environment"; &#13;
+&#13;
+        var hostingTable = {}; &#13;
+&#13;
+        hostingTable.name = "x_snc_testpuppetap_u_cmdb_ci_puppet_enterprise"; &#13;
+&#13;
+        hostingTable.identifier = "object_id"; &#13;
+&#13;
+        hostingTable.identifierValue = discoveryResponse.objectId; &#13;
+&#13;
+         &#13;
+&#13;
+        var envObjectId = discoveryResponse.objectId + "_"+ environmentResponse[respIndex].name; &#13;
+&#13;
+        var environmentTable = new BuildTableData(tableName,envObjectId, hostingTable); &#13;
+&#13;
+        //add attributes for the table &#13;
+&#13;
+        environmentTable[tableName].attributes.name = environmentResponse[respIndex].name; &#13;
+&#13;
+        PuppetModelString.push(environmentTable); &#13;
+&#13;
+    }             &#13;
+&#13;
+    return global.JSON.stringify(PuppetModelString); &#13;
+&#13;
+} &#13;
+&#13;
+  &#13;
+&#13;
+  &#13;
+&#13;
+function BuildTableData(tableName, id, hostingTable){ &#13;
+&#13;
+    this[tableName] = {}; &#13;
+&#13;
+    this[tableName].validator = "PuppetEnterpriseResponseValidator"  ; &#13;
+&#13;
+    this[tableName].validator_overrides = {}; &#13;
+&#13;
+    this[tableName].identification = {}; &#13;
+&#13;
+    this[tableName].identification [tableName] = {}; &#13;
+&#13;
+    this[tableName].identification[tableName].criterion= {}; &#13;
+&#13;
+    this[tableName].identification[tableName].criterion.object_id = id.toString(); &#13;
+&#13;
+     &#13;
+&#13;
+    //attach hosting table identification &#13;
+&#13;
+    this[tableName].identification[hostingTable.name] = buildTableIdentification(hostingTable); &#13;
+&#13;
+     &#13;
+&#13;
+    this[tableName].attributes = {}; &#13;
+&#13;
+} &#13;
+&#13;
+  &#13;
+&#13;
+function buildTableIdentification(hostingTable){ &#13;
+&#13;
+    var identification = {}; &#13;
+&#13;
+    identification[hostingTable.name] = {}; &#13;
+&#13;
+    identification[hostingTable.name].criterion = {}; &#13;
+&#13;
+    identification[hostingTable.name].criterion[hostingTable.identifier] = hostingTable.identifierValue; &#13;
+&#13;
+    return identification[hostingTable.name]; &#13;
+&#13;
+} </script>
+        <script_js><![CDATA[function processResponse(response, cloudServiceAccountId, ldc) { 
+
+    var PuppetModelString = []; 
+
+    var discoveryResponse =global.JSON.parse(response); 
+
+    gs.info("^*^*^ Puppet Environment Discovery Response ^*^*^"+response); 
+
+    var respIndex =0; 
+
+    var tableName = ""; 
+
+     
+
+    //environment 
+
+    var environmentResponse = discoveryResponse.environments; 
+
+    for(respIndex= 0, environments_size = environmentResponse.length; respIndex <environments_size ; respIndex++){ 
+
+         
+
+        //hosting table = Enterprise for Environment 
+
+        tableName = "x_snc_testpuppetap_u_cmdb_ci_puppet_enterprise_environment"; 
+
+        var hostingTable = {}; 
+
+        hostingTable.name = "x_snc_testpuppetap_u_cmdb_ci_puppet_enterprise"; 
+
+        hostingTable.identifier = "object_id"; 
+
+        hostingTable.identifierValue = discoveryResponse.objectId; 
+
+         
+
+        var envObjectId = discoveryResponse.objectId + "_"+ environmentResponse[respIndex].name; 
+
+        var environmentTable = new BuildTableData(tableName,envObjectId, hostingTable); 
+
+        //add attributes for the table 
+
+        environmentTable[tableName].attributes.name = environmentResponse[respIndex].name; 
+
+        PuppetModelString.push(environmentTable); 
+
+    }             
+
+    return global.JSON.stringify(PuppetModelString); 
+
+} 
+
+  
+
+  
+
+function BuildTableData(tableName, id, hostingTable){ 
+
+    this[tableName] = {}; 
+
+    this[tableName].validator = "PuppetEnterpriseResponseValidator"  ; 
+
+    this[tableName].validator_overrides = {}; 
+
+    this[tableName].identification = {}; 
+
+    this[tableName].identification [tableName] = {}; 
+
+    this[tableName].identification[tableName].criterion= {}; 
+
+    this[tableName].identification[tableName].criterion.object_id = id.toString(); 
+
+     
+
+    //attach hosting table identification 
+
+    this[tableName].identification[hostingTable.name] = buildTableIdentification(hostingTable); 
+
+     
+
+    this[tableName].attributes = {}; 
+
+} 
+
+  
+
+function buildTableIdentification(hostingTable){ 
+
+    var identification = {}; 
+
+    identification[hostingTable.name] = {}; 
+
+    identification[hostingTable.name].criterion = {}; 
+
+    identification[hostingTable.name].criterion[hostingTable.identifier] = hostingTable.identifierValue; 
+
+    return identification[hostingTable.name]; 
+
+} ]]></script_js>
+        <sys_class_name>sn_cmp_rb_resourcescript</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2018-04-08 10:26:28</sys_created_on>
+        <sys_id>19cabdd6db1d1300cc9b2f0e0b96196d</sys_id>
+        <sys_mod_count>7</sys_mod_count>
+        <sys_name>Discover_Puppet_Environments </sys_name>
+        <sys_package display_value="testpuppetapp" source="x_snc_testpuppetap">8fd30952db191300cc9b2f0e0b96191e</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="testpuppetapp">8fd30952db191300cc9b2f0e0b96191e</sys_scope>
+        <sys_update_name>sn_cmp_rb_resourcescript_19cabdd6db1d1300cc9b2f0e0b96196d</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-04-09 02:30:49</sys_updated_on>
+        <type>7</type>
+    </sn_cmp_rb_resourcescript>
+</record_update>

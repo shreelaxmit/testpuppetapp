@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sn_cmp_com_profile_mapping">
+    <sn_cmp_com_profile_mapping action="INSERT_OR_UPDATE">
+        <cloud_account display_value="Vmware Cloud Account">b5699926db555300cc9b2f0e0b961947</cloud_account>
+        <location display_value="devcloud">28e9552edb115300066ff4eb0c96191a</location>
+        <price/>
+        <profile display_value="t1.micro">6f3b91e6db555300cc9b2f0e0b96193d</profile>
+        <sys_class_name>sn_cmp_com_profile_mapping</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2018-04-09 02:47:20</sys_created_on>
+        <sys_id>fd4b91e6db555300cc9b2f0e0b96199b</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name/>
+        <sys_package display_value="testpuppetapp" source="x_snc_testpuppetap">8fd30952db191300cc9b2f0e0b96191e</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="testpuppetapp">8fd30952db191300cc9b2f0e0b96191e</sys_scope>
+        <sys_update_name>sn_cmp_com_profile_mapping_fd4b91e6db555300cc9b2f0e0b96199b</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-04-09 02:47:20</sys_updated_on>
+        <template display_value="t1.micro">865a1d2edb115300066ff4eb0c96198e</template>
+    </sn_cmp_com_profile_mapping>
+</record_update>

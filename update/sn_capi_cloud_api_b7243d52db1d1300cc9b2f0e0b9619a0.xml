@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sn_capi_cloud_api">
+    <sn_capi_cloud_api action="INSERT_OR_UPDATE">
+        <category display_value="Config Management">731f86900b2322004b1b812f15673ade</category>
+        <cloud_api_interface display_value="Configuration Management Interface">d97489240b232200f353c9bf15673ac9</cloud_api_interface>
+        <cloud_api_name>Puppet Enterprise Configuration API</cloud_api_name>
+        <connector display_value="Script Connector">4cceec0f0b1322003969a387b6673a80</connector>
+        <description/>
+        <is_scripted>true</is_scripted>
+        <is_system_defined>false</is_system_defined>
+        <provider display_value="Puppet Enterprise">60d3b952db1d1300cc9b2f0e0b96193e</provider>
+        <sys_class_name>sn_capi_cloud_api</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2018-04-08 09:57:25</sys_created_on>
+        <sys_id>b7243d52db1d1300cc9b2f0e0b9619a0</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>Puppet Enterprise Configuration API</sys_name>
+        <sys_package display_value="testpuppetapp" source="x_snc_testpuppetap">8fd30952db191300cc9b2f0e0b96191e</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="testpuppetapp">8fd30952db191300cc9b2f0e0b96191e</sys_scope>
+        <sys_update_name>sn_capi_cloud_api_b7243d52db1d1300cc9b2f0e0b9619a0</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-04-08 09:57:25</sys_updated_on>
+        <version>1.0</version>
+    </sn_capi_cloud_api>
+</record_update>

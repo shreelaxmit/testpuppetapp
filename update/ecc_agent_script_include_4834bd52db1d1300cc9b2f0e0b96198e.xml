@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update sys_domain="global" table="ecc_agent_script_include">
+    <ecc_agent_script_include action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <description>Script for CAPI - Puppet Enterprise Configuration API.Discover</description>
+        <name>puppet-enterprise--1.0-Discover</name>
+        <script><![CDATA[discoverPuppetEnterprise(); 
+
+  
+
+function discoverPuppetEnterprise() { 
+
+  
+
+    try { 
+
+        var discoveryPayload = {}; 
+
+        var additionalParameters = this.parameters.get('AdditionalParameters'); 
+
+        var additionalParams = new JSON().decode(additionalParameters); 
+
+        var discoveryParameter = additionalParams.entity; 
+
+         
+
+        ms.log("$$$ discoveryParameter : " + discoveryParameter); 
+
+  
+
+        if (discoveryParameter == "environment") { 
+
+            //invoke Environments Discovery 
+
+            var peE = new PuppetEnterpriseEnvironments(this.parameters, this.headers); 
+
+            var environments = peE.discoverEnvironments(); 
+
+            discoveryPayload['environments'] = environments.environments; 
+
+            discoveryPayload['objectId'] =  environments.objectId; 
+
+        } 
+
+         
+
+        if (discoveryParameter == "group") { 
+
+            //invoke Environments Discovery 
+
+            var peG = new PuppetEnterpriseClassification(this.parameters, this.headers); 
+
+            var groups = peG.discoverGroups(); 
+
+            discoveryPayload['groups'] = groups.groups; 
+
+            discoveryPayload['objectId'] =  groups.objectId; 
+
+        } 
+
+  
+
+        if (discoveryParameter == "inventory") { 
+
+            //invoke Inventories Discovery 
+
+            var peI = new PuppetEnterpriseInventory(this.parameters, this.headers); 
+
+            var inventories = peI.discoverInventories(); 
+
+            discoveryPayload['inventories'] = inventories.inventories; 
+
+            discoveryPayload['facts'] = inventories.facts; 
+
+            discoveryPayload['objectId'] =  inventories.objectId; 
+
+        } 
+
+  
+
+        if (discoveryParameter == "unsigned_certificate") { 
+
+            //invoke Unsigned Certificates Discovery 
+
+            var peC = new PuppetEnterpriseUnsignedCerts(this.parameters, this.headers); 
+
+            var unsignedCertificates = peC.discoverUnsignedCert(); 
+
+            discoveryPayload['unsignedCertificates'] = unsignedCertificates.unsigned_certs; 
+
+            discoveryPayload['objectId'] =  unsignedCertificates.objectId; 
+
+        } 
+
+  
+
+        if (discoveryParameter == "moduleClasses") {  
+
+            //invoke job_modules Discovery 
+
+            var peJ = new PuppetEnterpriseEnvironments(this.parameters, this.headers); 
+
+            var modules = peJ.discoverModuleClasses(); 
+
+            discoveryPayload['moduleClasses'] = modules.moduleClasses; 
+
+            discoveryPayload['objectId'] =  modules.objectId; 
+
+        } 
+
+  
+
+        return discoveryPayload; 
+
+    } catch (exception) { 
+
+        throw exception; 
+
+    } 
+
+} ]]></script>
+        <sys_class_name>ecc_agent_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2018-04-08 09:57:26</sys_created_on>
+        <sys_domain>global</sys_domain>
+        <sys_domain_path>/</sys_domain_path>
+        <sys_id>4834bd52db1d1300cc9b2f0e0b96198e</sys_id>
+        <sys_mod_count>1</sys_mod_count>
+        <sys_name>puppet-enterprise--1.0-Discover</sys_name>
+        <sys_overrides/>
+        <sys_package display_value="testpuppetapp" source="x_snc_testpuppetap">8fd30952db191300cc9b2f0e0b96191e</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="testpuppetapp">8fd30952db191300cc9b2f0e0b96191e</sys_scope>
+        <sys_update_name>ecc_agent_script_include_4834bd52db1d1300cc9b2f0e0b96198e</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-04-08 10:03:04</sys_updated_on>
+    </ecc_agent_script_include>
+</record_update>

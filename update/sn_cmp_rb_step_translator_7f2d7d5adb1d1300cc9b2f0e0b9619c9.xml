@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sn_cmp_rb_step_translator">
+    <sn_cmp_rb_step_translator action="INSERT_OR_UPDATE">
+        <order>0</order>
+        <script display_value="Discover_Puppet_Config_Installables ">cef9f5d6db1d1300cc9b2f0e0b961914</script>
+        <step display_value="Configuration Management Interface.Discover.1">239a3dd6db1d1300cc9b2f0e0b9619c1</step>
+        <sys_class_name>sn_cmp_rb_step_translator</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2018-04-08 10:36:45</sys_created_on>
+        <sys_id>7f2d7d5adb1d1300cc9b2f0e0b9619c9</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name/>
+        <sys_package display_value="testpuppetapp" source="x_snc_testpuppetap">8fd30952db191300cc9b2f0e0b96191e</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="testpuppetapp">8fd30952db191300cc9b2f0e0b96191e</sys_scope>
+        <sys_update_name>sn_cmp_rb_step_translator_7f2d7d5adb1d1300cc9b2f0e0b9619c9</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-04-08 10:36:45</sys_updated_on>
+    </sn_cmp_rb_step_translator>
+</record_update>

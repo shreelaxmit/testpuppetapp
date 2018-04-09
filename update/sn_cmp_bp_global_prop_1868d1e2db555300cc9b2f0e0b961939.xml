@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sn_cmp_bp_global_prop">
+    <sn_cmp_bp_global_prop action="INSERT_OR_UPDATE">
+        <bp_stage_operation display_value="Provision">aa489d62db555300cc9b2f0e0b9619be</bp_stage_operation>
+        <bp_stage_res_op_attr display_value="ManagedDisk">4468d1e2db555300cc9b2f0e0b96191c</bp_stage_res_op_attr>
+        <mandatory>true</mandatory>
+        <name>Virtual_Server_ManagedDisk</name>
+        <order>3927</order>
+        <resource_op_unique_id>6086</resource_op_unique_id>
+        <sys_class_name>sn_cmp_bp_global_prop</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2018-04-09 02:34:25</sys_created_on>
+        <sys_id>1868d1e2db555300cc9b2f0e0b961939</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>Virtual_Server_ManagedDisk</sys_name>
+        <sys_package display_value="testpuppetapp" source="x_snc_testpuppetap">8fd30952db191300cc9b2f0e0b96191e</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="testpuppetapp">8fd30952db191300cc9b2f0e0b96191e</sys_scope>
+        <sys_update_name>sn_cmp_bp_global_prop_1868d1e2db555300cc9b2f0e0b961939</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-04-09 02:34:25</sys_updated_on>
+    </sn_cmp_bp_global_prop>
+</record_update>

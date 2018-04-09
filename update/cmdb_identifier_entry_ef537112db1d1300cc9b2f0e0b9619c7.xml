@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="cmdb_identifier_entry">
+    <cmdb_identifier_entry action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <allow_fallback>false</allow_fallback>
+        <allow_null_attribute>false</allow_null_attribute>
+        <attributes>object_id</attributes>
+        <condition/>
+        <exact_count_match>false</exact_count_match>
+        <identifier display_value="x_snc_testpuppetap_u_cmdb_ci_puppet_enterprise">a1533112db1d1300cc9b2f0e0b9619c6</identifier>
+        <order>100</order>
+        <sys_class_name>cmdb_identifier_entry</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2018-04-08 09:53:52</sys_created_on>
+        <sys_id>ef537112db1d1300cc9b2f0e0b9619c7</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name/>
+        <sys_package display_value="testpuppetapp" source="x_snc_testpuppetap">8fd30952db191300cc9b2f0e0b96191e</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="testpuppetapp">8fd30952db191300cc9b2f0e0b96191e</sys_scope>
+        <sys_update_name>cmdb_identifier_entry_ef537112db1d1300cc9b2f0e0b9619c7</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-04-08 09:53:52</sys_updated_on>
+        <table>x_snc_testpuppetap_u_cmdb_ci_puppet_enterprise</table>
+    </cmdb_identifier_entry>
+</record_update>

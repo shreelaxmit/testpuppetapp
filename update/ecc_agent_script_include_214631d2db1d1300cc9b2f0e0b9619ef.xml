@@ -1,0 +1,497 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update sys_domain="global" table="ecc_agent_script_include">
+    <ecc_agent_script_include action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <description/>
+        <name>PuppetEnterpriseAPIBase </name>
+        <script><![CDATA[var PuppetEnterpriseAPIBase = Class.create(); 
+
+PuppetEnterpriseAPIBase.prototype = { 
+
+    Properties: Packages.java.util.Properties, 
+
+    HTTPRequest: Packages.com.glide.communications.HTTPRequest, 
+
+    SecureShellHelper : Packages.com.snc.cmp.connector.cloud.ssh.provider.SecureShellHelper, 
+
+    Thread  : Packages.java.lang.Thread, 
+
+     
+
+     
+
+  
+
+    /** 
+
+     * Parameters and headers are expected to come from the bluprint or capi layer 
+
+     */ 
+
+    initialize: function(parameters, headers) { 
+
+        //define Macros 
+
+        this.puppetTargetRunCount=50; 
+
+        this.puppetWaitPeriod=20000; 
+
+         
+
+        this.logger = new PuppetEnterpriseLogger(); 
+
+        this.parameters = parameters; 
+
+        var ENDPOINT = "Endpoint"; 
+
+        var USERNAME = "Identity"; 
+
+        var PASSWORD = "Credentials"; 
+
+        var CONFIG_MGMT_PROVIDER_INFO = "ConfigMgmtProviderInfo"; 
+
+        this.DEFAULT_ERROR_STATUS_CODE = "500"; 
+
+        this.PORT_CLOSED = "PORT-4433 CLOSED"; 
+
+        this.URL_NOT_FOUND = "404"; 
+
+  
+
+        var configMgmtProvider = this.parameters.get(CONFIG_MGMT_PROVIDER_INFO); 
+
+        var configData = new JSON().decode(configMgmtProvider); 
+
+        this.enterpriseUrl = this.parameters.get(ENDPOINT); 
+
+        this.enterpriseUsername = configData.UserName; 
+
+        this.enterprisePassword = configData.Password; 
+
+        this.machine_username = configData.Machine_UserName; 
+
+        this.machine_password = configData.Machine_Password; 
+
+        this.objectId = configData.ObjectId; 
+
+    }, 
+
+  
+
+  
+
+    /** 
+
+     * This method returns reachable IP address from list of Addresses. 
+
+     */ 
+
+    _getNodeAddress: function(){ 
+
+        var nodeAddressJson = this.parameters.get("NodeAddress"); 
+
+        var nodeAddressJsonPayload = new JSON().decode(nodeAddressJson); 
+
+        var publicIp = nodeAddressJsonPayload.public_ip; 
+
+        var privateIp = nodeAddressJsonPayload.private_ip; 
+
+        var reachableIPAddress; 
+
+        if(!JSUtil.nil(publicIp)) 
+
+            reachableIPAddress=publicIp; 
+
+        if(!JSUtil.nil(privateIp)) 
+
+            reachableIPAddress=privateIp; 
+
+  
+
+        return reachableIPAddress; 
+
+    }, 
+
+  
+
+  
+
+    /** 
+
+     * Returns NodeName , from the input parameters 
+
+     */ 
+
+    _getNodeName: function(){ 
+
+        var additionalParams =  this.parameters.get("AdditionalParameters"); 
+
+        var additionalParamsJson = new JSON().decode(additionalParams); 
+
+        this.logger.info("***** Node Name from Additional Parameters :" +additionalParamsJson.node_name); 
+
+        return additionalParamsJson.node_name; 
+
+    }, 
+
+  
+
+  
+
+    /** 
+
+     * To query Puppet Enterprise, token must be generated.. 
+
+     */ 
+
+    _getToken: function() { 
+
+        var payload = {}; 
+
+        payload["login"] = this.enterpriseUsername; 
+
+        payload["password"] = this.enterprisePassword; 
+
+  
+
+        try { 
+
+            var authUrl = this.enterpriseUrl + ":4433/rbac-api/v1/auth/token"; 
+
+            var request = new this.HTTPRequest(authUrl); 
+
+            request.addHeader("Content-Type", "application/json"); 
+
+            var payloadJsonObj = new JSON().encodeObject(payload); 
+
+            var response = request.post(payloadJsonObj); 
+
+            var status = response.getStatusCode(); 
+
+            var responseBody = response.getBody(); 
+
+            var jsonObj = new JSON().decode(responseBody); 
+
+            var token = jsonObj.token; 
+
+  
+
+            return token; 
+
+        } catch (exception) { 
+
+            //duckking exception to main method 
+
+            throw new PuppetEnterpriseAPIException(exception.toString(),status); 
+
+        } 
+
+    }, 
+
+  
+
+  
+
+    /** 
+
+     * Get Additional Parameters from route headers and parse it and return in a dictionary form 
+
+     */ 
+
+    _getAddtionalParameters: function(){ 
+
+  
+
+        var additionalParams =  this.parameters.get("AdditionalParameters"); 
+
+        this.logger.info("***** Additional Parameters from CAPI header:" +additionalParams); 
+
+        var additionalParamsJson = new JSON().decode(additionalParams); 
+
+        var mgmtAttrsJson = additionalParamsJson.management_attributes; 
+
+        var additionalParameters = {}; 
+
+  
+
+        for(var outListIndex=0; outListIndex<mgmtAttrsJson.length; outListIndex++){ 
+
+            var attrData = mgmtAttrsJson[outListIndex]; 
+
+            var key=""; 
+
+            var value=""; 
+
+            for(var attr in attrData){ 
+
+                if(attrData[attr].name == "management_attribute"){ 
+
+                    key = attrData[attr].value; 
+
+                } 
+
+  
+
+                else if(attrData[attr].name == "management_attribute_value"){ 
+
+                    value = attrData[attr].value; 
+
+                } 
+
+            } 
+
+            additionalParameters[key] = value; 
+
+        } 
+
+        this.logger.info("***** Management Attributes from additional paramters:" +JSON.stringify(additionalParameters)); 
+
+        return additionalParameters; 
+
+    }, 
+
+  
+
+  
+
+    /** 
+
+     * Get ConfigOverrides from route headers and parse it and return in a dictionary form 
+
+     */ 
+
+    _getConfigOverrides: function(){ 
+
+        var configAttrs =  this.parameters.get("ConfigurationOverrides"); 
+
+        var configAttrsJson = new JSON().decode(configAttrs); 
+
+        var configParameters = {}; 
+
+        for(var outListIndex=0; outListIndex<configAttrsJson.length; outListIndex++){ 
+
+            var attrData = configAttrsJson[outListIndex]; 
+
+            var key=""; 
+
+            var value=""; 
+
+            for(var attr in attrData){ 
+
+                if(attrData[attr].name == "attribute"){ 
+
+                    key = attrData[attr].value; 
+
+                } 
+
+                if(attrData[attr].name == "value"){ 
+
+                    value = attrData[attr].value; 
+
+                } 
+
+            } 
+
+            configParameters[key] = value; 
+
+        } 
+
+        this.logger.info("***** ConfigOverrides... :" +JSON.stringify(configParameters)); 
+
+        return configParameters; 
+
+    }, 
+
+  
+
+  
+
+    /** 
+
+      * HTTP Responses are parssed. 
+
+     */ 
+
+    _getResponse: function(response) { 
+
+        var status = response.getStatusCode(); 
+
+        var responseBody = response.getBody(); 
+
+        if ((status < 200) || (status >= 300)) { 
+
+            throw new PuppetEnterpriseAPIException(responseBody, status); 
+
+        } else { 
+
+            var jsonObj = new JSON().decode(responseBody); 
+
+            return jsonObj; 
+
+        } 
+
+  
+
+    }, 
+
+  
+
+    /** 
+
+      * HTTP GET Request are made to PuppetEnterprise and return responses. 
+
+      * This method takes api path as input parameter from calling method. 
+
+     */ 
+
+    _httpGET: function(apiPath) { 
+
+        try { 
+
+  
+
+            //get Login token 
+
+            var token = this._getToken(); 
+
+  
+
+            var getUrl = this.enterpriseUrl + apiPath; 
+
+            var request = new this.HTTPRequest(getUrl); 
+
+            request.addHeader("Content-Type", "application/json"); 
+
+            request.addHeader("X-Authentication", token); 
+
+            var response = request.get(); 
+
+            var jsonObj = this._getResponse(response); 
+
+            return jsonObj; 
+
+        } catch (exception) { 
+
+            //duckking exception to main method 
+
+            //Handling server error 500. 
+
+            ms.log('Error occurred while making get request '+ response); 
+
+            throw new PuppetEnterpriseAPIException(exception.toString(), this.DEFAULT_ERROR_STATUS_CODE); 
+
+        } 
+
+    }, 
+
+  
+
+  
+
+    /** 
+
+      * HTTP POST Request are made to PuppetEnterprise and returns responses. 
+
+      * This method takes api path and payload as input parameter from calling method. 
+
+     */ 
+
+    _httpPOST: function(apiPath, payload) { 
+
+        try { 
+
+            var token = this._getToken(); 
+
+            var postUrl = this.enterpriseUrl + apiPath; 
+
+            var request = new this.HTTPRequest(postUrl); 
+
+            request.addHeader("Content-Type", "application/json"); 
+
+            request.addHeader("X-Authentication", token); 
+
+            var response = request.post(payload); 
+
+            var jsonObj = this._getResponse(response); 
+
+  
+
+            return jsonObj; 
+
+        } catch (exception) { 
+
+            //duckking exception to main method 
+
+            throw new PuppetEnterpriseAPIException(exception.toString(), this.DEFAULT_ERROR_STATUS_CODE); 
+
+        } 
+
+    }, 
+
+  
+
+  
+
+    /** 
+
+      * HTTP PUT Request are made to PuppetEnterprise and returns responses. 
+
+      * This method takes api path and payload as input parameter from calling method. 
+
+     */ 
+
+    _httpPUT: function(apiPath, payload) { 
+
+        try { 
+
+            var token = this._getToken(); 
+
+            var putUrl = this.enterpriseUrl + apiPath; 
+
+            var request = new this.HTTPRequest(putUrl); 
+
+            request.addHeader("Content-Type", "application/json"); 
+
+            request.addHeader("X-Authentication", token); 
+
+            var response = request.put(payload); 
+
+            var jsonObj = this._getResponse(response); 
+
+  
+
+            return jsonObj; 
+
+        } catch (exception) { 
+
+            //duckking exception to main method 
+
+            throw new PuppetEnterpriseAPIException(exception.toString(), this.DEFAULT_ERROR_STATUS_CODE); 
+
+        } 
+
+    }, 
+
+  
+
+  
+
+    type: 'PuppetEnterpriseAPIBase' 
+
+}; ]]></script>
+        <sys_class_name>ecc_agent_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2018-04-08 10:07:15</sys_created_on>
+        <sys_domain>global</sys_domain>
+        <sys_domain_path>/</sys_domain_path>
+        <sys_id>214631d2db1d1300cc9b2f0e0b9619ef</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>PuppetEnterpriseAPIBase </sys_name>
+        <sys_overrides/>
+        <sys_package display_value="testpuppetapp" source="x_snc_testpuppetap">8fd30952db191300cc9b2f0e0b96191e</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="testpuppetapp">8fd30952db191300cc9b2f0e0b96191e</sys_scope>
+        <sys_update_name>ecc_agent_script_include_214631d2db1d1300cc9b2f0e0b9619ef</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-04-08 10:07:15</sys_updated_on>
+    </ecc_agent_script_include>
+</record_update>

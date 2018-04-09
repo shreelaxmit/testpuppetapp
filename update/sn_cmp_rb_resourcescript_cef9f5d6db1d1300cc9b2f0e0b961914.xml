@@ -1,0 +1,357 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sn_cmp_rb_resourcescript">
+    <sn_cmp_rb_resourcescript action="INSERT_OR_UPDATE">
+        <name>Discover_Puppet_Config_Installables </name>
+        <resource display_value="Puppet Enterprise">9999b1d6db1d1300cc9b2f0e0b961973</resource>
+        <script>function processResponse(response, cloudServiceAccountId, ldc) { &#13;
+&#13;
+    var PuppetModelString = []; &#13;
+&#13;
+    var discoveryResponse =global.JSON.parse(response); &#13;
+&#13;
+    gs.info("##### Rachana #### Puppet### Classification###--&gt;"+response); &#13;
+&#13;
+    var respIndex =0; &#13;
+&#13;
+    var tableName = ""; &#13;
+&#13;
+  &#13;
+&#13;
+    //groups &#13;
+&#13;
+    var groupResponse = discoveryResponse.groups; &#13;
+&#13;
+    for(respIndex= 0, group_size = groupResponse.length; respIndex &lt; group_size ; respIndex++){ &#13;
+&#13;
+        var hostingTables = []; &#13;
+&#13;
+  &#13;
+&#13;
+        //hosting table = Enterprise for config_installable &#13;
+&#13;
+        tableName = "sn_cmp_cfg_installable"; &#13;
+&#13;
+        var hostingTable = {}; &#13;
+&#13;
+        hostingTable.name = "x_snc_testpuppetap_u_cmdb_ci_puppet_enterprise"; &#13;
+&#13;
+        hostingTable.identifier = "object_id"; &#13;
+&#13;
+        hostingTable.identifierValue = discoveryResponse.objectId; &#13;
+&#13;
+        hostingTables.push(hostingTable); &#13;
+&#13;
+  &#13;
+&#13;
+        var groupObjectId = discoveryResponse.objectId + "_"+ groupResponse[respIndex].name; &#13;
+&#13;
+        var configInstallTable = new BuildTableData(tableName,groupObjectId, hostingTables); &#13;
+&#13;
+        //add attributes for the table &#13;
+&#13;
+        configInstallTable[tableName].attributes.name = groupResponse[respIndex].name; &#13;
+&#13;
+        configInstallTable[tableName].attributes.run_list = groupResponse[respIndex].class_names; &#13;
+&#13;
+  &#13;
+&#13;
+        PuppetModelString.push(configInstallTable); &#13;
+&#13;
+  &#13;
+&#13;
+        //payload for installableParameters &#13;
+&#13;
+        var parameters = groupResponse[respIndex].class_params;//it is a List of dict's with key-value pair &#13;
+&#13;
+        if(parameters.length &gt;0){ &#13;
+&#13;
+            for(var index=0; index &lt; parameters.length; index++){ &#13;
+&#13;
+                for(var param in parameters[index]){ &#13;
+&#13;
+                    gs.info("#### param--&gt;"+param); &#13;
+&#13;
+                    //hosting table = sn_cmp_cfg_installable for configInstallables &#13;
+&#13;
+                    var installParamTable = {}; &#13;
+&#13;
+                    installParamTable.name = "sn_cmp_cfg_installable"; &#13;
+&#13;
+                    installParamTable.identifier = "object_id"; &#13;
+&#13;
+                    installParamTable.identifierValue = groupObjectId; &#13;
+&#13;
+                    hostingTables.push(installParamTable); &#13;
+&#13;
+                    gs.info("### hostingTables---&gt;"+JSON.stringify(hostingTables)); &#13;
+&#13;
+  &#13;
+&#13;
+                    var paramtableName = "sn_cmp_cfg_installable_param"; &#13;
+&#13;
+                    var paramObjectId = groupObjectId +"_"+param; &#13;
+&#13;
+                    var installableParamTable = new BuildTableData(paramtableName, paramObjectId, hostingTables ); &#13;
+&#13;
+  &#13;
+&#13;
+                    //add attributes for table &#13;
+&#13;
+                    installableParamTable[paramtableName].attributes.name = param; &#13;
+&#13;
+                    installableParamTable[paramtableName].attributes.value = parameters[index][param]; &#13;
+&#13;
+  &#13;
+&#13;
+                    PuppetModelString.push(installableParamTable);     &#13;
+&#13;
+                    gs.info("#### installableParamTable--&gt;"+ JSON.stringify(installableParamTable)); &#13;
+&#13;
+                } &#13;
+&#13;
+            } &#13;
+&#13;
+        } &#13;
+&#13;
+    }             &#13;
+&#13;
+    gs.info("#### PuppetModelString--&gt;"+JSON.stringify(PuppetModelString)); &#13;
+&#13;
+    return global.JSON.stringify(PuppetModelString); &#13;
+&#13;
+} &#13;
+&#13;
+  &#13;
+&#13;
+  &#13;
+&#13;
+function BuildTableData(tableName, id, hostingTables){ &#13;
+&#13;
+    this[tableName] = {}; &#13;
+&#13;
+    this[tableName].validator = "PuppetEnterpriseResponseValidator"  ; &#13;
+&#13;
+    this[tableName].validator_overrides = {}; &#13;
+&#13;
+    this[tableName].identification = {}; &#13;
+&#13;
+    this[tableName].identification [tableName] = {}; &#13;
+&#13;
+    this[tableName].identification[tableName].criterion= {}; &#13;
+&#13;
+    this[tableName].identification[tableName].criterion.object_id = id.toString(); &#13;
+&#13;
+  &#13;
+&#13;
+    //attach hosting table identification &#13;
+&#13;
+    for(var index in hostingTables){ &#13;
+&#13;
+        //attach hosting table identification &#13;
+&#13;
+        this[tableName].identification[hostingTables[index].name] = buildTableIdentification(hostingTables[index]); &#13;
+&#13;
+    } &#13;
+&#13;
+    this[tableName].attributes = {}; &#13;
+&#13;
+} &#13;
+&#13;
+  &#13;
+&#13;
+function buildTableIdentification(hostingTable){ &#13;
+&#13;
+    var identification = {}; &#13;
+&#13;
+    identification[hostingTable.name] = {}; &#13;
+&#13;
+    identification[hostingTable.name].criterion = {}; &#13;
+&#13;
+    identification[hostingTable.name].criterion[hostingTable.identifier] = hostingTable.identifierValue; &#13;
+&#13;
+    return identification[hostingTable.name]; &#13;
+&#13;
+} </script>
+        <script_js><![CDATA[function processResponse(response, cloudServiceAccountId, ldc) { 
+
+    var PuppetModelString = []; 
+
+    var discoveryResponse =global.JSON.parse(response); 
+
+    gs.info("##### Rachana #### Puppet### Classification###-->"+response); 
+
+    var respIndex =0; 
+
+    var tableName = ""; 
+
+  
+
+    //groups 
+
+    var groupResponse = discoveryResponse.groups; 
+
+    for(respIndex= 0, group_size = groupResponse.length; respIndex < group_size ; respIndex++){ 
+
+        var hostingTables = []; 
+
+  
+
+        //hosting table = Enterprise for config_installable 
+
+        tableName = "sn_cmp_cfg_installable"; 
+
+        var hostingTable = {}; 
+
+        hostingTable.name = "x_snc_testpuppetap_u_cmdb_ci_puppet_enterprise"; 
+
+        hostingTable.identifier = "object_id"; 
+
+        hostingTable.identifierValue = discoveryResponse.objectId; 
+
+        hostingTables.push(hostingTable); 
+
+  
+
+        var groupObjectId = discoveryResponse.objectId + "_"+ groupResponse[respIndex].name; 
+
+        var configInstallTable = new BuildTableData(tableName,groupObjectId, hostingTables); 
+
+        //add attributes for the table 
+
+        configInstallTable[tableName].attributes.name = groupResponse[respIndex].name; 
+
+        configInstallTable[tableName].attributes.run_list = groupResponse[respIndex].class_names; 
+
+  
+
+        PuppetModelString.push(configInstallTable); 
+
+  
+
+        //payload for installableParameters 
+
+        var parameters = groupResponse[respIndex].class_params;//it is a List of dict's with key-value pair 
+
+        if(parameters.length >0){ 
+
+            for(var index=0; index < parameters.length; index++){ 
+
+                for(var param in parameters[index]){ 
+
+                    gs.info("#### param-->"+param); 
+
+                    //hosting table = sn_cmp_cfg_installable for configInstallables 
+
+                    var installParamTable = {}; 
+
+                    installParamTable.name = "sn_cmp_cfg_installable"; 
+
+                    installParamTable.identifier = "object_id"; 
+
+                    installParamTable.identifierValue = groupObjectId; 
+
+                    hostingTables.push(installParamTable); 
+
+                    gs.info("### hostingTables--->"+JSON.stringify(hostingTables)); 
+
+  
+
+                    var paramtableName = "sn_cmp_cfg_installable_param"; 
+
+                    var paramObjectId = groupObjectId +"_"+param; 
+
+                    var installableParamTable = new BuildTableData(paramtableName, paramObjectId, hostingTables ); 
+
+  
+
+                    //add attributes for table 
+
+                    installableParamTable[paramtableName].attributes.name = param; 
+
+                    installableParamTable[paramtableName].attributes.value = parameters[index][param]; 
+
+  
+
+                    PuppetModelString.push(installableParamTable);     
+
+                    gs.info("#### installableParamTable-->"+ JSON.stringify(installableParamTable)); 
+
+                } 
+
+            } 
+
+        } 
+
+    }             
+
+    gs.info("#### PuppetModelString-->"+JSON.stringify(PuppetModelString)); 
+
+    return global.JSON.stringify(PuppetModelString); 
+
+} 
+
+  
+
+  
+
+function BuildTableData(tableName, id, hostingTables){ 
+
+    this[tableName] = {}; 
+
+    this[tableName].validator = "PuppetEnterpriseResponseValidator"  ; 
+
+    this[tableName].validator_overrides = {}; 
+
+    this[tableName].identification = {}; 
+
+    this[tableName].identification [tableName] = {}; 
+
+    this[tableName].identification[tableName].criterion= {}; 
+
+    this[tableName].identification[tableName].criterion.object_id = id.toString(); 
+
+  
+
+    //attach hosting table identification 
+
+    for(var index in hostingTables){ 
+
+        //attach hosting table identification 
+
+        this[tableName].identification[hostingTables[index].name] = buildTableIdentification(hostingTables[index]); 
+
+    } 
+
+    this[tableName].attributes = {}; 
+
+} 
+
+  
+
+function buildTableIdentification(hostingTable){ 
+
+    var identification = {}; 
+
+    identification[hostingTable.name] = {}; 
+
+    identification[hostingTable.name].criterion = {}; 
+
+    identification[hostingTable.name].criterion[hostingTable.identifier] = hostingTable.identifierValue; 
+
+    return identification[hostingTable.name]; 
+
+} ]]></script_js>
+        <sys_class_name>sn_cmp_rb_resourcescript</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2018-04-08 10:23:18</sys_created_on>
+        <sys_id>cef9f5d6db1d1300cc9b2f0e0b961914</sys_id>
+        <sys_mod_count>5</sys_mod_count>
+        <sys_name>Discover_Puppet_Config_Installables </sys_name>
+        <sys_package display_value="testpuppetapp" source="x_snc_testpuppetap">8fd30952db191300cc9b2f0e0b96191e</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="testpuppetapp">8fd30952db191300cc9b2f0e0b96191e</sys_scope>
+        <sys_update_name>sn_cmp_rb_resourcescript_cef9f5d6db1d1300cc9b2f0e0b961914</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-04-09 00:52:52</sys_updated_on>
+        <type>7</type>
+    </sn_cmp_rb_resourcescript>
+</record_update>

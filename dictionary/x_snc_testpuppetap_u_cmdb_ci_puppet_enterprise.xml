@@ -1,0 +1,3 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element extends="sn_cmp_wl_cfg_mgmt_provider" label="Puppet Enterprise" max_length="40" name="x_snc_testpuppetap_u_cmdb_ci_puppet_enterprise" sizeclass="1" type="collection"/>
+</database>

@@ -1,0 +1,269 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update sys_domain="global" table="ecc_agent_script_include">
+    <ecc_agent_script_include action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <description/>
+        <name>PuppetEnterpriseClassification </name>
+        <script><![CDATA[var PuppetEnterpriseClassification = Class.create(); 
+
+PuppetEnterpriseClassification.prototype = Object.extendsObject(PuppetEnterpriseAPIBase, { 
+
+  
+
+    initialize: function (parameters, headers) { 
+
+        this.apiPath = "/api/classifier/groups"; 
+
+        PuppetEnterpriseAPIBase.prototype.initialize.call(this, parameters, headers); 
+
+    }, 
+
+  
+
+  
+
+    /** 
+
+     * This method Discovers List of groups at Puppet Enterprise upon Discover operation. 
+
+     * updates CMDB tables data 
+
+     */ 
+
+    discoverGroups: function () { 
+
+        this.logger.info("*** Puppet Enterprise Classification ***"); 
+
+        var groupPayload = []; 
+
+  
+
+        try { 
+
+            //Get group Lists 
+
+            var groupsResp = this._httpGET(this.apiPath); 
+
+            for (var index = 0; index < groupsResp.groups.length; index++) { 
+
+                //build group-table data for SNOW CMDB 
+
+                var groupDetails = {}; 
+
+                var paramsList = []; 
+
+                groupDetails['name'] = groupsResp.groups[index].name; 
+
+                groupDetails['class_names'] = JSON.stringify(Object.keys(groupsResp.groups[index].classes)); 
+
+                //groupDetails['environment'] = groupsResp[indeindex].environment; 
+
+  
+
+                var classesDict = groupsResp.groups[index].classes; 
+
+                for(var clas in classesDict){ 
+
+                    for(var param in classesDict[clas] ){ 
+
+                        var paramData = {}; 
+
+                        paramData[clas +"~"+param] = classesDict[clas][param]; 
+
+  
+
+                        paramsList.push(paramData); 
+
+                    } 
+
+                } 
+
+                groupDetails['class_params'] = paramsList; 
+
+                groupPayload.push(groupDetails); 
+
+            } 
+
+  
+
+            var groupData = {}; 
+
+            groupData.groups = groupPayload; 
+
+            groupData.objectId = this.objectId; 
+
+  
+
+            return groupData; 
+
+        } catch (exception) { 
+
+            //duckking eindexception to main method 
+
+            throw exception; 
+
+        } 
+
+    }, 
+
+  
+
+  
+
+    /** 
+
+     * This method add a class to the specific classification 
+
+     * Inputs are from Stack variables and blueprint, which is invoked from ExecuteConfig operation. 
+
+     */ 
+
+    compareGroupParameterValue: function () { 
+
+        this.logger.info("*** Compare Group parameter and Update at Puppet Enterprise ***"); 
+
+  
+
+        try { 
+
+            var additionalParams = this._getAddtionalParameters(); 
+
+            var configParams = this._getConfigOverrides(); 
+
+            var configScriptJson = this.parameters.get("ConfigScript"); 
+
+            var configScript  = new JSON().decode(configScriptJson); 
+
+            var groupName = configScript['name']; 
+
+            this.nodeName = this._getNodeName(); 
+
+            this.logger.info("*** ConfigOverrides at compareGroupParameterValue method: "+ JSON.stringify(configParams) + " with Classification name : "+ groupName); 
+
+  
+
+            // Get the details of the Group  from the puppet enterprise 
+
+            var groupResp = this._httpGET(this.apiPath); 
+
+            var groupsList = groupResp.groups; 
+
+  
+
+            var groupIndex = groupsList.map(function(o) { return o.name; }).indexOf(groupName); 
+
+            if(groupIndex < 0) 
+
+                throw new PuppetEnterpriseAPIException(" Classification Not Found at Puppet Enterprise.. Please Re-try this operation after Discovery operation"); 
+
+                 
+
+            this.logger.info("*** Group Id "+groupsList[groupIndex].id + " from Group name :"+ groupName); 
+
+  
+
+            var groupClassUrl = this.apiPath + "/" + groupsList[groupIndex].id; 
+
+            var groupClassResp = this._httpGET(groupClassUrl); 
+
+  
+
+            //a deepcopy of groupClass response 
+
+            var payload = JSON.parse(JSON.stringify(groupClassResp)); 
+
+  
+
+            //update class paramter value in classification 
+
+            for(var cName in groupClassResp.group.classes){ 
+
+                for(var params in configParams){ 
+
+                    var className = params.split('~')[0]; 
+
+                    var paramName = params.split('~')[1]; 
+
+  
+
+                    this.logger.info("*** Class Name: "+ className + " Parameter Name: " + paramName); 
+
+                    if((cName == className) && (paramName in groupClassResp.group.classes[cName])){ 
+
+                        //update at PE 
+
+                        payload.group.classes[cName][paramName] = parseInt(configParams[params]); 
+
+  
+
+                        this.logger.info("***** Classification PUT Payload: "+JSON.stringify(payload)); 
+
+                        var putPayload = new JSON().encode(payload); 
+
+                        var updatedGroupClassResp = this._httpPUT(groupClassUrl, putPayload); 
+
+                        this.logger.info("***** Update of Classification Response: "+JSON.stringify(updatedGroupClassResp)); 
+
+                    } 
+
+                } 
+
+            } 
+
+  
+
+            var pinPayloadDict = {}; 
+
+            pinPayloadDict.nodes = []; 
+
+            pinPayloadDict.nodes.push(this.nodeName.toLowerCase()); 
+
+  
+
+            var pinPayload =  new JSON().encode(pinPayloadDict); 
+
+  
+
+            var pinApiPath = ":4433/classifier-api/v1/groups/" + groupsList[groupIndex].id + "/pin"; 
+
+            var pinTogroupResp = this._httpPOST(pinApiPath, pinPayload); 
+
+            this.logger.info("*** Added Node : "+ this.nodeName + " to Classification : "+ groupName); 
+
+  
+
+        } catch (exception) { 
+
+            //duckking eindexception to main method 
+
+            throw exception; 
+
+        } 
+
+    }, 
+
+  
+
+  
+
+  
+
+    type: "PuppetEnterpriseClassification" 
+
+}); ]]></script>
+        <sys_class_name>ecc_agent_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2018-04-08 10:09:53</sys_created_on>
+        <sys_domain>global</sys_domain>
+        <sys_domain_path>/</sys_domain_path>
+        <sys_id>e896f1d2db1d1300cc9b2f0e0b96193f</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>PuppetEnterpriseClassification </sys_name>
+        <sys_overrides/>
+        <sys_package display_value="testpuppetapp" source="x_snc_testpuppetap">8fd30952db191300cc9b2f0e0b96191e</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="testpuppetapp">8fd30952db191300cc9b2f0e0b96191e</sys_scope>
+        <sys_update_name>ecc_agent_script_include_e896f1d2db1d1300cc9b2f0e0b96193f</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-04-08 10:09:53</sys_updated_on>
+    </ecc_agent_script_include>
+</record_update>

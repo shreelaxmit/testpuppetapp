@@ -1,0 +1,317 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update sys_domain="global" table="ecc_agent_script_include">
+    <ecc_agent_script_include action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <description/>
+        <name>PuppetEnterpriseJob </name>
+        <script><![CDATA[var PuppetEnterpriseJob = Class.create(); 
+
+PuppetEnterpriseJob.prototype = Object.extendsObject(PuppetEnterpriseAPIBase, { 
+
+  
+
+    initialize: function(parameters, headers) { 
+
+        this.apiPath = "/api/jobs/"; 
+
+        this.envObj = new PuppetEnterpriseEnvironments(parameters, headers); 
+
+        PuppetEnterpriseAPIBase.prototype.initialize.call(this, parameters, headers); 
+
+    }, 
+
+  
+
+  
+
+    /** 
+
+     * This method fires a job template at Puppet Enterprise. 
+
+     * Inputs are from Stack variables and blueprint, which is invoked from ExecuteConfig operation. 
+
+     */ 
+
+    launchAJob: function(){ 
+
+        this.logger.info("*** Launching a Job at Puppet Enterprise ***"); 
+
+  
+
+        try{ 
+
+            //initialize NodeList with list of nodes if needed, else a single node on which Job has to run. 
+
+            var jobFlag = ""; 
+
+            var pcpStatusCount=0; 
+
+             
+
+            //get certname of agent as registered at puppet enterprise 
+
+            this.nodeName = this._getNodeName().toLowerCase(); 
+
+             
+
+            do{ 
+
+                //sleep for some seconds, so that puppet agent gets connected to PCP Broker, to Run a job. 
+
+                //sleep for 5 sec 
+
+                this.pcpStatus = this.getStatusOfPCPBrokerForANode(this.nodeName); 
+
+                this.logger.info("***** Run puppet  status for node " + this.nodeName +  " in inventory is still: "+ this.pcpStatus +" Lets keep waiting....with Re-try Count: " + pcpStatusCount); 
+
+                this.Thread.sleep(this.puppetWaitPeriod); 
+
+                 
+
+                pcpStatusCount++; 
+
+            }while((this.pcpStatus != true) && (pcpStatusCount < this.puppetTargetRunCount)); 
+
+             
+
+            this.logger.info("***** Wait completed for node " + this.nodeName + ' Now ready to run job '+ this.pcpStatus);     
+
+            if(this.pcpStatus == true){ 
+
+                //payload for HTTP POST 
+
+                var payload = {}; 
+
+                payload.certname = this.nodeName; 
+
+                payload.flags = []; 
+
+  
+
+                var postPayload = new JSON().encode(payload); 
+
+                var launchAPIPath = "/api/agents/run"; 
+
+                var jobLaunchResp = this._httpPOST(launchAPIPath, postPayload); 
+
+                this.logger.info("***** Job Launch Response : "+ JSON.stringify(jobLaunchResp )); 
+
+  
+
+                //check status of job launched. 
+
+                var jobAPIPath = this.apiPath+jobLaunchResp.transactionId ; 
+
+                this.checkJobStatus(jobAPIPath); 
+
+  
+
+            } 
+
+  
+
+            else{ 
+
+                throw new PuppetEnterpriseAPIException('PCP Broker of Agent is not connected to your Puppet Enterprise,  Please check your Puppet Enterprise/Node configuration ',this.DEFAULT_ERROR_STATUS_CODE); 
+
+            } 
+
+  
+
+        } 
+
+        catch(exception){ 
+
+            //duckking exception to main method 
+
+            throw exception; 
+
+        } 
+
+  
+
+    }, 
+
+  
+
+  
+
+    /** 
+
+     * This method gets status of a job at Puppet Enterprise. 
+
+     */ 
+
+    checkJobStatus: function(apiPath){ 
+
+        try{ 
+
+            var jobStatusCount = 0; 
+
+            var jobResp = ""; 
+
+            do{ 
+
+                jobResp = this._httpGET(apiPath); 
+
+                if(jobResp.job.state.toString() == "finished") {  
+
+                    this.logger.info(" JobId: "+ jobResp.job.id +" Launch status : "+jobResp.job.state); 
+
+                    return true; 
+
+                }  
+
+  
+
+                else if(jobResp.job.state.toString() == "failed") { 
+
+                    //check Job status logs , for error details 
+
+                    var jobStatusLogAPI = apiPath + "/nodes"; 
+
+                    var jobStatusLogResp = this._httpGET(jobStatusLogAPI); 
+
+  
+
+                    for(var index=0; index < jobStatusLogResp.nodes.length; index++){ 
+
+  
+
+                        if((jobStatusLogResp.nodes[index].name == this.nodeName.toLowerCase()) && (jobStatusLogResp.nodes[index].state == "errored")){ 
+
+  
+
+                            throw new PuppetEnterpriseAPIException('Job Execution Failed at Puppet Enterprise with Message: ' + jobStatusLogResp.nodes[index].message,this.DEFAULT_ERROR_STATUS_CODE); 
+
+                        } 
+
+                    } 
+
+                } 
+
+  
+
+                else if(jobResp.job.state.toString() == "running"){ 
+
+                    //sleep for 5 secs 
+
+                    this.logger.info("***** Sleep for a while!!! Since Job is Running *****"); 
+
+                    this.Thread.sleep(this.puppetWaitPeriod); 
+
+  
+
+                } 
+
+  
+
+                else{ 
+
+                    //throw exception for unknown state of a job 
+
+                    throw new PuppetEnterpriseAPIException('Job Execution State is unpredictable at Puppet Enterprise with state: ' + jobResp.job.state.toString(),this.DEFAULT_ERROR_STATUS_CODE); 
+
+                } 
+
+                jobStatusCount++; 
+
+            }while((jobResp.job.state.toString() != "finished") && (jobStatusCount < this.puppetTargetRunCount)); 
+
+  
+
+            //throw exception for unknown state of a job 
+
+            if((jobResp.job.state.toString() != "finished") && (jobStatusCount >= this.puppetTargetRunCount)) 
+
+                throw new PuppetEnterpriseAPIException('Job Execution State is unpredictable at Puppet Enterprise with state: ' + jobResp.job.state.toString(),this.DEFAULT_ERROR_STATUS_CODE); 
+
+  
+
+        }  
+
+        catch(exception){ 
+
+            //duckking exception to main method 
+
+            throw exception; 
+
+        } 
+
+    }, 
+
+  
+
+  
+
+    /** 
+
+     * This method gets status of PCP (Puppet Communications Protocol) broker for a node  
+
+     * This method is invoked from launchAJob method 
+
+     * Inputs are from launchAJob, which is Node Cert Name. 
+
+     */ 
+
+    getStatusOfPCPBrokerForANode: function(nodeCertName){ 
+
+        try{ 
+
+            var pcpApiPath = ":8143/orchestrator/v1/inventory"; 
+
+            var payload = {}; 
+
+            payload.nodes=[nodeCertName]; 
+
+            var pcpPostPayload = new JSON().encode(payload); 
+
+            var pcpResp = this._httpPOST(pcpApiPath,pcpPostPayload); 
+
+  
+
+            this.logger.info("***** PCP Post Response for Node :" + nodeCertName + " resp: "+ JSON.stringify(pcpResp)); 
+
+            for(var index=0; index<pcpResp.items.length; index++){ 
+
+                if(pcpResp.items[index].name == nodeCertName){ 
+
+                    return pcpResp.items[index].connected; 
+
+                } 
+
+            } 
+
+  
+
+        }catch(exception){ 
+
+            //duckking exception to main method 
+
+            throw exception; 
+
+        } 
+
+    }, 
+
+  
+
+    type: "PuppetEnterpriseJob" 
+
+}); ]]></script>
+        <sys_class_name>ecc_agent_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2018-04-08 10:16:09</sys_created_on>
+        <sys_domain>global</sys_domain>
+        <sys_domain_path>/</sys_domain_path>
+        <sys_id>72583d16db1d1300cc9b2f0e0b96194b</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>PuppetEnterpriseJob </sys_name>
+        <sys_overrides/>
+        <sys_package display_value="testpuppetapp" source="x_snc_testpuppetap">8fd30952db191300cc9b2f0e0b96191e</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="testpuppetapp">8fd30952db191300cc9b2f0e0b96191e</sys_scope>
+        <sys_update_name>ecc_agent_script_include_72583d16db1d1300cc9b2f0e0b96194b</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-04-08 10:16:09</sys_updated_on>
+    </ecc_agent_script_include>
+</record_update>

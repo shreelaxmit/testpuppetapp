@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sn_cmp_rb_op_impl_step">
+    <sn_cmp_rb_op_impl_step action="INSERT_OR_UPDATE">
+        <capi_interface display_value="Configuration Management Interface">d97489240b232200f353c9bf15673ac9</capi_interface>
+        <capi_method display_value="Discover">7174c9240b232200f353c9bf15673a1d</capi_method>
+        <capi_version>1.0</capi_version>
+        <condition/>
+        <depends_on/>
+        <enabled>true</enabled>
+        <interface/>
+        <interface_operation/>
+        <name>Configuration Management Interface.Discover.1</name>
+        <operationimpl display_value="Discover">d1b9f1d6db1d1300cc9b2f0e0b961995</operationimpl>
+        <order>10</order>
+        <owner_type>1</owner_type>
+        <parent_step/>
+        <parentstep/>
+        <product_type/>
+        <provider>puppet-enterprise-</provider>
+        <provider_type/>
+        <sys_class_name>sn_cmp_rb_op_impl_step</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2018-04-08 10:25:32</sys_created_on>
+        <sys_id>239a3dd6db1d1300cc9b2f0e0b9619c1</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>Configuration Management Interface.Discover.1</sys_name>
+        <sys_package display_value="testpuppetapp" source="x_snc_testpuppetap">8fd30952db191300cc9b2f0e0b96191e</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="testpuppetapp">8fd30952db191300cc9b2f0e0b96191e</sys_scope>
+        <sys_update_name>sn_cmp_rb_op_impl_step_239a3dd6db1d1300cc9b2f0e0b9619c1</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-04-08 10:25:32</sys_updated_on>
+    </sn_cmp_rb_op_impl_step>
+</record_update>

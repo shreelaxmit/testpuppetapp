@@ -1,0 +1,317 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sn_cmp_rb_resourcescript">
+    <sn_cmp_rb_resourcescript action="INSERT_OR_UPDATE">
+        <name>Discover_Puppet_Create_Application_Template </name>
+        <resource display_value="Puppet Enterprise">9999b1d6db1d1300cc9b2f0e0b961973</resource>
+        <script>function processResponse(response, cloudServiceAccountId, ldc) { &#13;
+&#13;
+    var puppetEnterpriseTableLabel = 'Puppet Enterprise'; &#13;
+&#13;
+    var PuppetModelString = []; &#13;
+&#13;
+    var discoveryResponse =global.JSON.parse(response); &#13;
+&#13;
+    gs.info("##### Puppet### Discover_Puppet_Create_Application_Template###--&gt;"+response); &#13;
+&#13;
+    var respIndex =0; &#13;
+&#13;
+    //groups &#13;
+&#13;
+    var groupResponse = discoveryResponse.groups; &#13;
+&#13;
+    var puppetEnterpriseTableName = getPuppetTableName(puppetEnterpriseTableLabel); &#13;
+&#13;
+    var providerInstance = getProviderInstance( puppetEnterpriseTableName, discoveryResponse.objectId); &#13;
+&#13;
+    gs.info('#### PuppetModelString Discover_Puppet_Create_Application_Template--&gt; puppetEnterpriseTableName ' + puppetEnterpriseTableName + '   groupResponseLength = ' + groupResponse.length); &#13;
+&#13;
+    for(respIndex= 0, group_size = groupResponse.length; respIndex &lt; group_size ; respIndex++){ &#13;
+&#13;
+    gs.info('#### PuppetModelString Discover_Puppet_Create_Application_Template--&gt; respIndex ' + respIndex); &#13;
+&#13;
+         &#13;
+&#13;
+        //hostingTable.name = puppetEnterpriseTableName; &#13;
+&#13;
+        var groupObjectId = discoveryResponse.objectId + "_"+ groupResponse[respIndex].name; &#13;
+&#13;
+        var installable = getInstallable( groupObjectId); &#13;
+&#13;
+         &#13;
+&#13;
+        createOrUpdateTemplates( installable.sys_id, installable.name, groupObjectId, providerInstance.name, providerInstance.sys_id); &#13;
+&#13;
+    } &#13;
+&#13;
+    gs.info("#### PuppetModelString Discover_Puppet_Create_Application_Template--&gt;"); &#13;
+&#13;
+    return "[]"; &#13;
+&#13;
+} &#13;
+&#13;
+  &#13;
+&#13;
+function getInstallable( objectId){ &#13;
+&#13;
+    gs.info('#### PuppetModelString Discover_Puppet_Create_Application_Template--&gt; getInstallable ' + objectId ); &#13;
+&#13;
+    var installable = {}; &#13;
+&#13;
+        var installableGr = new GlideRecord('sn_cmp_cfg_installable'); &#13;
+&#13;
+        if(installableGr.get('object_id', objectId)){ &#13;
+&#13;
+            installable.name = installableGr.getValue('name'); &#13;
+&#13;
+            installable.sys_id = installableGr.getUniqueValue(); &#13;
+&#13;
+            installable.run_list = installableGr.getValue('run_list'); &#13;
+&#13;
+        } &#13;
+&#13;
+    gs.info('#### PuppetModelString Discover_Puppet_Create_Application_Template--&gt; getInstallable ' + JSON.stringify(installable) ); &#13;
+&#13;
+     &#13;
+&#13;
+        return installable; &#13;
+&#13;
+    } &#13;
+&#13;
+     &#13;
+&#13;
+    function createOrUpdateTemplates( configSysId, name, objectId, instanceName, providerInstanceId){ &#13;
+&#13;
+        var applicationTemplateGr = new GlideRecord( 'sn_cmp_application_template'); &#13;
+&#13;
+        var templateId = getUniqueTemplateName( instanceName, objectId); &#13;
+&#13;
+        applicationTemplateGr.get('template_id', templateId); &#13;
+&#13;
+        applicationTemplateGr.setValue('name', name); &#13;
+&#13;
+        applicationTemplateGr.setValue('config_runlist_provider', 'sn_cmp_cfg_installable'); &#13;
+&#13;
+        applicationTemplateGr.setValue('config_runlist', configSysId); &#13;
+&#13;
+        applicationTemplateGr.setValue('provider_instance', providerInstanceId); &#13;
+&#13;
+        applicationTemplateGr.setValue('template_id', templateId); &#13;
+&#13;
+        applicationTemplateGr.update(); &#13;
+&#13;
+    } &#13;
+&#13;
+     &#13;
+&#13;
+    function getProviderInstance( tableName, objectId){ &#13;
+&#13;
+        var providerInfo = {}; &#13;
+&#13;
+            var providerGr = new GlideRecord(tableName); &#13;
+&#13;
+            if( providerGr.get('object_id', objectId)){ &#13;
+&#13;
+                providerInfo.objectId = objectId; &#13;
+&#13;
+                providerInfo.sys_id =  providerGr.getUniqueValue(); &#13;
+&#13;
+                providerInfo.name = providerGr.getValue('name'); &#13;
+&#13;
+            } &#13;
+&#13;
+            return providerInfo; &#13;
+&#13;
+        } &#13;
+&#13;
+         &#13;
+&#13;
+        function getUniqueTemplateName( instanceName, objectId){ &#13;
+&#13;
+            var templateName = 'template' +  instanceName + objectId; &#13;
+&#13;
+            return templateName.replace(/ /g, ''); &#13;
+&#13;
+        } &#13;
+&#13;
+         &#13;
+&#13;
+        function getPuppetTableName(name){ &#13;
+&#13;
+            var dbObjectGr = new GlideRecord('sys_db_object'); &#13;
+&#13;
+            if(!dbObjectGr.isValid()) &#13;
+&#13;
+                gs.error('##### Puppet### Discover_Puppet_Create_Application_Template### failed to get table = ' + name  ); &#13;
+&#13;
+            if(dbObjectGr.get('label', name)){ &#13;
+&#13;
+                return dbObjectGr.getValue('name'); &#13;
+&#13;
+            } &#13;
+&#13;
+            return ''; &#13;
+&#13;
+        } </script>
+        <script_js><![CDATA[function processResponse(response, cloudServiceAccountId, ldc) { 
+
+    var puppetEnterpriseTableLabel = 'Puppet Enterprise'; 
+
+    var PuppetModelString = []; 
+
+    var discoveryResponse =global.JSON.parse(response); 
+
+    gs.info("##### Puppet### Discover_Puppet_Create_Application_Template###-->"+response); 
+
+    var respIndex =0; 
+
+    //groups 
+
+    var groupResponse = discoveryResponse.groups; 
+
+    var puppetEnterpriseTableName = getPuppetTableName(puppetEnterpriseTableLabel); 
+
+    var providerInstance = getProviderInstance( puppetEnterpriseTableName, discoveryResponse.objectId); 
+
+    gs.info('#### PuppetModelString Discover_Puppet_Create_Application_Template--> puppetEnterpriseTableName ' + puppetEnterpriseTableName + '   groupResponseLength = ' + groupResponse.length); 
+
+    for(respIndex= 0, group_size = groupResponse.length; respIndex < group_size ; respIndex++){ 
+
+    gs.info('#### PuppetModelString Discover_Puppet_Create_Application_Template--> respIndex ' + respIndex); 
+
+         
+
+        //hostingTable.name = puppetEnterpriseTableName; 
+
+        var groupObjectId = discoveryResponse.objectId + "_"+ groupResponse[respIndex].name; 
+
+        var installable = getInstallable( groupObjectId); 
+
+         
+
+        createOrUpdateTemplates( installable.sys_id, installable.name, groupObjectId, providerInstance.name, providerInstance.sys_id); 
+
+    } 
+
+    gs.info("#### PuppetModelString Discover_Puppet_Create_Application_Template-->"); 
+
+    return "[]"; 
+
+} 
+
+  
+
+function getInstallable( objectId){ 
+
+    gs.info('#### PuppetModelString Discover_Puppet_Create_Application_Template--> getInstallable ' + objectId ); 
+
+    var installable = {}; 
+
+        var installableGr = new GlideRecord('sn_cmp_cfg_installable'); 
+
+        if(installableGr.get('object_id', objectId)){ 
+
+            installable.name = installableGr.getValue('name'); 
+
+            installable.sys_id = installableGr.getUniqueValue(); 
+
+            installable.run_list = installableGr.getValue('run_list'); 
+
+        } 
+
+    gs.info('#### PuppetModelString Discover_Puppet_Create_Application_Template--> getInstallable ' + JSON.stringify(installable) ); 
+
+     
+
+        return installable; 
+
+    } 
+
+     
+
+    function createOrUpdateTemplates( configSysId, name, objectId, instanceName, providerInstanceId){ 
+
+        var applicationTemplateGr = new GlideRecord( 'sn_cmp_application_template'); 
+
+        var templateId = getUniqueTemplateName( instanceName, objectId); 
+
+        applicationTemplateGr.get('template_id', templateId); 
+
+        applicationTemplateGr.setValue('name', name); 
+
+        applicationTemplateGr.setValue('config_runlist_provider', 'sn_cmp_cfg_installable'); 
+
+        applicationTemplateGr.setValue('config_runlist', configSysId); 
+
+        applicationTemplateGr.setValue('provider_instance', providerInstanceId); 
+
+        applicationTemplateGr.setValue('template_id', templateId); 
+
+        applicationTemplateGr.update(); 
+
+    } 
+
+     
+
+    function getProviderInstance( tableName, objectId){ 
+
+        var providerInfo = {}; 
+
+            var providerGr = new GlideRecord(tableName); 
+
+            if( providerGr.get('object_id', objectId)){ 
+
+                providerInfo.objectId = objectId; 
+
+                providerInfo.sys_id =  providerGr.getUniqueValue(); 
+
+                providerInfo.name = providerGr.getValue('name'); 
+
+            } 
+
+            return providerInfo; 
+
+        } 
+
+         
+
+        function getUniqueTemplateName( instanceName, objectId){ 
+
+            var templateName = 'template' +  instanceName + objectId; 
+
+            return templateName.replace(/ /g, ''); 
+
+        } 
+
+         
+
+        function getPuppetTableName(name){ 
+
+            var dbObjectGr = new GlideRecord('sys_db_object'); 
+
+            if(!dbObjectGr.isValid()) 
+
+                gs.error('##### Puppet### Discover_Puppet_Create_Application_Template### failed to get table = ' + name  ); 
+
+            if(dbObjectGr.get('label', name)){ 
+
+                return dbObjectGr.getValue('name'); 
+
+            } 
+
+            return ''; 
+
+        } ]]></script_js>
+        <sys_class_name>sn_cmp_rb_resourcescript</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2018-04-08 10:27:54</sys_created_on>
+        <sys_id>491b311adb1d1300cc9b2f0e0b96197b</sys_id>
+        <sys_mod_count>1</sys_mod_count>
+        <sys_name>Discover_Puppet_Create_Application_Template </sys_name>
+        <sys_package display_value="testpuppetapp" source="x_snc_testpuppetap">8fd30952db191300cc9b2f0e0b96191e</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="testpuppetapp">8fd30952db191300cc9b2f0e0b96191e</sys_scope>
+        <sys_update_name>sn_cmp_rb_resourcescript_491b311adb1d1300cc9b2f0e0b96197b</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-04-08 10:27:54</sys_updated_on>
+        <type>7</type>
+    </sn_cmp_rb_resourcescript>
+</record_update>

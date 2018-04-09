@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sn_cmp_bp_rule">
+    <sn_cmp_bp_rule action="INSERT_OR_UPDATE">
+        <description>Reload Virtual_Server_ExternalNetwork</description>
+        <event display_value="FieldChange">91e8dde2db555300cc9b2f0e0b9619d1</event>
+        <name>Reload Virtual_Server_ExternalNetwork</name>
+        <order>650</order>
+        <source_key display_value="Location">4de8dde2db555300cc9b2f0e0b9619ad</source_key>
+        <status>1</status>
+        <sys_class_name>sn_cmp_bp_rule</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2018-04-09 02:36:45</sys_created_on>
+        <sys_id>26e85126db555300cc9b2f0e0b96196a</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>Reload Virtual_Server_ExternalNetwork</sys_name>
+        <sys_package display_value="testpuppetapp" source="x_snc_testpuppetap">8fd30952db191300cc9b2f0e0b96191e</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="testpuppetapp">8fd30952db191300cc9b2f0e0b96191e</sys_scope>
+        <sys_update_name>sn_cmp_bp_rule_26e85126db555300cc9b2f0e0b96196a</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-04-09 02:36:45</sys_updated_on>
+    </sn_cmp_bp_rule>
+</record_update>

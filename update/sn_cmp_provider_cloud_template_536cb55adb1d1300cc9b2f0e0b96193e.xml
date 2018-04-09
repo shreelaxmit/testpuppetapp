@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sn_cmp_provider_cloud_template">
+    <sn_cmp_provider_cloud_template action="INSERT_OR_UPDATE">
+        <cloud_script_template/>
+        <operation_template display_value="Puppet Enterprise ">a22cf15adb1d1300cc9b2f0e0b9619fb</operation_template>
+        <provider_operation display_value="DeprovisionConfigPackages">e57489240b232200f353c9bf15673aef</provider_operation>
+        <sys_class_name>sn_cmp_provider_cloud_template</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2018-04-08 10:33:26</sys_created_on>
+        <sys_id>536cb55adb1d1300cc9b2f0e0b96193e</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>e57489240b232200f353c9bf15673aef</sys_name>
+        <sys_package display_value="testpuppetapp" source="x_snc_testpuppetap">8fd30952db191300cc9b2f0e0b96191e</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="testpuppetapp">8fd30952db191300cc9b2f0e0b96191e</sys_scope>
+        <sys_update_name>sn_cmp_provider_cloud_template_536cb55adb1d1300cc9b2f0e0b96193e</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-04-08 10:33:26</sys_updated_on>
+    </sn_cmp_provider_cloud_template>
+</record_update>

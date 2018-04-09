@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sc_cat_item_catalog">
+    <sc_cat_item_catalog action="INSERT_OR_UPDATE">
+        <sc_cat_item display_value="Apacheappinstaller">59b899e2db555300cc9b2f0e0b961994</sc_cat_item>
+        <sc_catalog display_value="Cloud Service Catalog">b029d6da0b212200eff7ef9bb4673a42</sc_catalog>
+        <sys_class_name>sc_cat_item_catalog</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2018-04-09 02:35:52</sys_created_on>
+        <sys_id>61b899e2db555300cc9b2f0e0b9619a9</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>Cloud Service Catalog.Apacheappinstaller</sys_name>
+        <sys_package display_value="testpuppetapp" source="x_snc_testpuppetap">8fd30952db191300cc9b2f0e0b96191e</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="testpuppetapp">8fd30952db191300cc9b2f0e0b96191e</sys_scope>
+        <sys_update_name>sc_cat_item_catalog_61b899e2db555300cc9b2f0e0b9619a9</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-04-09 02:35:52</sys_updated_on>
+    </sc_cat_item_catalog>
+</record_update>

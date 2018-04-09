@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update sys_domain="global" table="ecc_agent_script_include">
+    <ecc_agent_script_include action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <description/>
+        <name>PuppetEnterpriseEnvironments </name>
+        <script><![CDATA[var PuppetEnterpriseEnvironments = Class.create(); 
+
+PuppetEnterpriseEnvironments.prototype = Object.extendsObject(PuppetEnterpriseAPIBase, { 
+
+  
+
+    initialize: function (parameters, headers) { 
+
+        this.apiPath = "/api/classifier/environments"; 
+
+        PuppetEnterpriseAPIBase.prototype.initialize.call(this, parameters, headers); 
+
+    }, 
+
+  
+
+  
+
+    /** 
+
+     * This method Discovers Environment at Puppet Enterprise upon Discover operation. 
+
+     * updates CMDB tables data 
+
+     */ 
+
+    discoverEnvironments: function () { 
+
+        this.logger.info("*** PUPPET ENVIRONMENTS ***"); 
+
+        var environmentPayload = []; 
+
+  
+
+        try { 
+
+            //Get Environment Lists 
+
+            var envnRep = this._httpGET(this.apiPath); 
+
+            for (var index = 0; index < envnRep.length; index++) { 
+
+                var environmentDetails = {}; 
+
+                environmentDetails['name'] = envnRep[index]; 
+
+  
+
+                environmentPayload.push(environmentDetails); 
+
+            } 
+
+  
+
+            var environmentData = {}; 
+
+            environmentData.environments = environmentPayload; 
+
+            environmentData.objectId = this.objectId; 
+
+            return environmentData; 
+
+        }  
+
+        catch (exception) { 
+
+            //duckking exception to main method 
+
+            throw exception; 
+
+        } 
+
+    }, 
+
+  
+
+     
+
+    /** 
+
+     * This method Discovers List of Module Classes at Puppet Enterprise upon Discover operation. 
+
+     * updates CMDB tables data 
+
+     */ 
+
+    discoverModuleClasses: function () { 
+
+        this.logger.info("*** PUPPET MODULE Classes ***"); 
+
+  
+
+        try { 
+
+            //Get Environments Lists 
+
+            var environList = this.discoverEnvironments(); 
+
+            var modulesPayload = []; 
+
+  
+
+            //loop over each environment, to get modules 
+
+            for(var index=0; index < environList.environments.length; index++){ 
+
+                var moduleClassUrl = this.apiPath +"/"+ environList.environments[index].name +"/class-names"; 
+
+                var moduleClassResp = this._httpGET(moduleClassUrl); 
+
+  
+
+                //loop each modules to get parameters 
+
+                for(var moduleindex=0; moduleindex < moduleClassResp.length; moduleindex++){ 
+
+                    var moduleUrl = this.apiPath + "/" + environList.environments[index].name +"/classes/"+ moduleClassResp[moduleindex]; 
+
+                    var moduleClassParamResp = this._httpGET(moduleUrl); 
+
+  
+
+                    var modulesData = {}; 
+
+                    modulesData.name = moduleClassResp[moduleindex]; 
+
+                    modulesData.parameters = moduleClassParamResp.parameters; 
+
+  
+
+                    modulesPayload.push(modulesData); 
+
+                } 
+
+            } 
+
+  
+
+            var moduleData = {}; 
+
+            moduleData.moduleClasses = modulesPayload; 
+
+            moduleData.objectId = this.objectId; 
+
+  
+
+            return moduleData; 
+
+        }  
+
+        catch (exception) { 
+
+            //duckking exception to main method 
+
+            throw exception; 
+
+        } 
+
+    }, 
+
+    type: "PuppetEnterpriseEnvironments" 
+
+}); 
+]]></script>
+        <sys_class_name>ecc_agent_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2018-04-08 10:14:47</sys_created_on>
+        <sys_domain>global</sys_domain>
+        <sys_domain_path>/</sys_domain_path>
+        <sys_id>e3d77116db1d1300cc9b2f0e0b9619bb</sys_id>
+        <sys_mod_count>1</sys_mod_count>
+        <sys_name>PuppetEnterpriseEnvironments </sys_name>
+        <sys_overrides/>
+        <sys_package display_value="testpuppetapp" source="x_snc_testpuppetap">8fd30952db191300cc9b2f0e0b96191e</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="testpuppetapp">8fd30952db191300cc9b2f0e0b96191e</sys_scope>
+        <sys_update_name>ecc_agent_script_include_e3d77116db1d1300cc9b2f0e0b9619bb</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-04-08 11:15:49</sys_updated_on>
+    </ecc_agent_script_include>
+</record_update>

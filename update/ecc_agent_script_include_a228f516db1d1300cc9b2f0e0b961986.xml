@@ -1,0 +1,463 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update sys_domain="global" table="ecc_agent_script_include">
+    <ecc_agent_script_include action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <description/>
+        <name>PuppetEnterpriseInventory </name>
+        <script><![CDATA[var PuppetEnterpriseInventory = Class.create(); 
+
+PuppetEnterpriseInventory.prototype = Object.extendsObject(PuppetEnterpriseAPIBase, { 
+
+  
+
+    initialize: function (parameters, headers) { 
+
+        this.apiPath = "/api/classifier/nodes"; 
+
+        this.secureShellhelper = new this.SecureShellHelper(); 
+
+        PuppetEnterpriseAPIBase.prototype.initialize.call(this, parameters, headers); 
+
+  
+
+    }, 
+
+  
+
+  
+
+    /** 
+
+     * This method is to Accept Cert Request from Puppet Agent at Puppet Enterprise upon Register Node operation. 
+
+     */ 
+
+    acceptCertRequest: function(){ 
+
+        this.apiPath = "/api/certificates/nodes"; 
+
+        var additionalParameters = this.parameters.get('AdditionalParameters'); 
+
+        var additionalParametersPayload = new JSON().decode(additionalParameters); 
+
+        var nodeName = additionalParametersPayload['node_name'].toLowerCase(); 
+
+        var count=0; 
+
+        var currentState= "Notrequested"; 
+
+        var proxyInfo = this.parameters.get('mid.capi.proxyInfo'); 
+
+  
+
+        do{ 
+
+            this.logger.info("***** Starting invocation of Certificate Acceptance at PE with Additional Parameters at acceptCertRequest method: " +additionalParameters + " with NodeName: "+nodeName + " with Count: " + count); 
+
+  
+
+            var certListResp = this._httpGET(this.apiPath); 
+
+            var certList = certListResp.nodes; 
+
+            var index = certList.map(function(o) { return o.name; }).indexOf(nodeName); 
+
+            this.logger.info("**** Certficate for Node at Puppet Enterprise: "+JSON.stringify(certList[index])); 
+
+             
+
+            if((certList[index].name == nodeName)&& (certList[index].state == "requested")){ 
+
+                currentState = certList[index].state; 
+
+                this.logger.info("*** Node Certificate Status: "+currentState); 
+
+                //accept the request 
+
+                var payload = {}; 
+
+                payload.nodes = []; 
+
+                payload.nodes.push(nodeName); 
+
+                payload.action = "accept"; 
+
+  
+
+                var postPayload = new JSON().encode(payload); 
+
+                this.acceptCertResp = this._httpPOST(this.apiPath, postPayload); 
+
+  
+
+                //update current state 
+
+                currentState = this.acceptCertResp.nodes[0].state; 
+
+                this.logger.info("*** Node Accept Certificate Response: "+JSON.stringify(this.acceptCertResp)); 
+
+  
+
+            } 
+
+            else{ 
+
+                this.logger.info("*** Waiting  for the cert to be in the requested state  ***, since current state is "+currentState + ", re-try count: " + count); 
+
+                //sleep for 5 secs 
+
+                this.Thread.sleep(this.puppetWaitPeriod); 
+
+            } 
+
+            count ++; 
+
+        }while (( currentState != "signed" ) && (count <this.puppetTargetRunCount )); 
+
+  
+
+        if((currentState == "failed")){ 
+
+            this.logger.info("*** Certificate Request Not Accepted at PE"); 
+
+            throw new PuppetEnterpriseAPIException(this.acceptCertResp.nodes[0].error.details, this.acceptCertResp.nodes[0].error.status); 
+
+        } 
+
+        if((count >= this.puppetTargetRunCount) && (currentState == "Notrequested")){ 
+
+            this.logger.info("*** Certificate Request Not Accepted at PE Since Maximum re-try count reached ***"); 
+
+            throw new PuppetEnterpriseAPIException("**** Certificate Request Not Accepted at PE Since Maximum re-try count reached" , "404"); 
+
+        } 
+
+        this.logger.info('Status after Accept Cert Request Operation: '+currentState); 
+
+    }, 
+
+  
+
+  
+
+    /** 
+
+    * This method Discovers List of Inventories at Puppet Enterprise upon Discover operation. 
+
+    * updates CMDB tables data 
+
+    */ 
+
+    discoverInventories: function () { 
+
+        this.logger.info("*** PUPPET INVENTORY ***"); 
+
+        var inventoryPayload = []; 
+
+  
+
+        var FactRep =""; 
+
+  
+
+        try { 
+
+            //Get Inventory Lists 
+
+            var payload = {}; 
+
+            var invenResp = this._httpPOST( this.apiPath, payload); 
+
+  
+
+            for (var index = 0; index < invenResp.length; index++) { 
+
+                var inventoryDetails = {}; 
+
+                inventoryDetails['name'] = invenResp[index].certname; 
+
+                inventoryDetails['certname'] = invenResp[index].certname; 
+
+                inventoryDetails['catalogenvironment'] = invenResp[index].catalogEnvironment; 
+
+                inventoryDetails['reportenvironment'] = invenResp[index].reportEnvironment; 
+
+                inventoryDetails['factsenvironment'] = invenResp[index].factsEnvironment; 
+
+                inventoryDetails['latest_report_status'] = invenResp[index].latestReportStatus; 
+
+                inventoryDetails['cached_catalog_status'] = invenResp[index].cachedCatalogStatus; 
+
+                inventoryDetails['latest_report_noop_pending'] = invenResp[index].latestReportNoopPending; 
+
+                inventoryDetails['latest_report_noop'] = invenResp[index].latestReportNoop; 
+
+                inventoryDetails['latest_report_corrective_change'] = invenResp[index].latestReportCorrectiveChange; 
+
+                inventoryDetails['latest_report_hash'] = invenResp[index].latestReportHash; 
+
+  
+
+                inventoryPayload.push(inventoryDetails); 
+
+  
+
+                var nodeId = invenResp[index].id; 
+
+                var factUrl = "/api/classifier/nodes/" + nodeId + "/facts"; 
+
+                var factObj = new PuppetEnterpriseFacts(this.parameters, this.headers); 
+
+                FactRep = factObj.discoverFacts(nodeId, factUrl); 
+
+            } 
+
+  
+
+            var inventoryData = {}; 
+
+            inventoryData.inventories = inventoryPayload; 
+
+            inventoryData.facts = FactRep; 
+
+            inventoryData.objectId = this.objectId; 
+
+            return inventoryData; 
+
+  
+
+        } catch (exception) { 
+
+            //duckking exception to main method 
+
+            throw exception; 
+
+        } 
+
+    }, 
+
+  
+
+  
+
+    /*  
+
+     * This method installs Puppet Agent at node using SecureShell class 
+
+     * Shell Script is the input from blue print 
+
+     */ 
+
+    installAgentAtNode: function(){ 
+
+        this.logger.info("*** INSTALL PUPPET AGENT AT NODE ***"); 
+
+        var installCounter=0; 
+
+  
+
+        try{ 
+
+            var additionalParameters = this.parameters.get('AdditionalParameters'); 
+
+            var additionalParametersPayload = new JSON().decode(additionalParameters); 
+
+            var configScript = this.parameters.get('ConfigScript').toString(); 
+
+            var nodeAddress = this._getNodeAddress(); 
+
+            var nodeCredentialsJson = this.parameters.get('NodeCredentials'); 
+
+            var nodeCredential = new JSON().decode(nodeCredentialsJson); 
+
+            var userName=nodeCredential['UserName']; 
+
+            var password=nodeCredential['Password']; 
+
+            var privateKey=nodeCredential['PrivateKey']; 
+
+            var privateKeyValid =privateKey.replaceAll('\\n','\n'); 
+
+            var shellResObj = ""; 
+
+            var proxyInfo = this.parameters.get('mid.capi.proxyInfo'); 
+
+            do{ 
+
+                var shellRes = this.secureShellhelper.executeCommand(nodeAddress, '22', userName, password, privateKeyValid, configScript, "sh", false, true, true,proxyInfo); 
+
+                // this needs to be modified. 
+
+                this.logger.info("*** Execution response for script execution object " +shellRes); 
+
+  
+
+                //parse shell response for exitcode and status 
+
+                shellRes = shellRes.toString().split('ExecutionResponse')[1]; 
+
+                shellRes = shellRes.replaceAll('=', ':').replaceAll('stdOut', '"stdOut"') 
+
+                    .replaceAll('stdErr','"stdErr"').replaceAll('exitCode','"exitCode"') 
+
+                    .replaceAll('executedOn','"executedOn"').replaceAll('response','"response"') 
+
+                    .replaceAll("\'", "\"").replaceAll("[\n\r]", " "); 
+
+  
+
+                //if length of shell response is less than 500, we assume its an abnormal message from shell 
+
+                if (shellRes.length() < 500){ 
+
+                    shellResObj = JSON.parse(shellRes); 
+
+                    this.logger.info(" Install ShellScript Exit Code : "+shellResObj.exitCode ); 
+
+  
+
+                    //exitCode = -1 means system is set to reboot.  
+
+                    if((shellResObj.exitCode == -1) && (this.count <3)){ 
+
+                        //sleep for few seconds, so that agent will request master 
+
+                        this.logger.info("***** Sleep for a while!!! Before we initiate Re-installation of Puppet Agent at Node *****"); 
+
+                        //sleep for 5 sec 
+
+                        this.Thread.sleep(this.puppetWaitPeriod); 
+
+                        this.logger.info("***** Woke-up from sleep!!! Ready to Re-installation of Puppet Agent at Node: " + this.nodeName + " with install Count: " + installCounter); 
+
+                    } 
+
+                    installCounter++; 
+
+                } 
+
+            }while((shellResObj.exitCode == -1) && (installCounter <3)); 
+
+  
+
+            if((shellResObj.exitCode == -1) && (installCounter >= 3)){ 
+
+                throw new PuppetEnterpriseAPIException("VM Provisioned for PuppetEnterprise doesnot Configured with mandatory data" , "400"); 
+
+            } 
+
+        } 
+
+        catch (exception) { 
+
+            //duckking exception to main method 
+
+            throw exception; 
+
+        } 
+
+  
+
+    }, 
+
+  
+
+  
+
+    /*  
+
+     * This method Unsignes the ssh/ssl Certificate  of node at Puppet Enterprise , which is invoked at De-registernode operation 
+
+     */ 
+
+    unsignCertANode: function(){ 
+
+        // code to unsign certificate 
+
+        this.logger.info("**** Unsigning Certificate for Node ****"); 
+
+        try{ 
+
+            var nodeName = this._getNodeName().toLowerCase(); 
+
+            var configScript = this.parameters.get('ConfigScript').toString(); 
+
+            var nodeAddress = this.enterpriseUrl.split("//")[1]; 
+
+            var userName= this.machine_user; 
+
+            var password= this.machine_password; 
+
+            var shellRes = ""; 
+
+            var proxyInfo = this.parameters.get('mid.capi.proxyInfo'); 
+
+             
+
+            this.logger.info("*** Unpin the Node from all Classification it has connected ***"); 
+
+            var unpinApiPath = ":4433/classifier-api/v1/commands/unpin-from-all"; 
+
+            var unpinPayloadDict = {}; 
+
+            unpinPayloadDict.nodes = []; 
+
+            unpinPayloadDict.nodes.push(nodeName.toLowerCase()); 
+
+            var unpinPayload = new JSON().encode(unpinPayloadDict); 
+
+            var unpinResp = this._httpPOST(unpinApiPath,unpinPayload); 
+
+            this.logger.info("***unpin Resp :"+JSON.stringify(unpinResp)); 
+
+            this.logger.info("*** Remove/Purge Node from Puppet Enterprise ***"); 
+
+            if(userName == "root"){ 
+
+                shellRes = this.secureShellhelper.executeCommand(nodeAddress, '22', userName, password, "", configScript, "sh", false, false, false,proxyInfo); 
+
+            } 
+
+            else { 
+
+                shellRes = this.secureShellhelper.executeCommand(nodeAddress, '22', userName, password, "", configScript, "sh", false, true, true,proxyInfo); 
+
+            } 
+
+            shellRes = shellRes.toString().split('ExecutionResponse')[1]; 
+
+            this.logger.info(" UncertOfNode Response: "+ shellRes); 
+
+  
+
+        }catch (exception) { 
+
+            //duckking exception to main method 
+
+            throw exception; 
+
+        } 
+
+    }, 
+
+  
+
+    type: "PuppetEnterpriseInventory" 
+
+}); ]]></script>
+        <sys_class_name>ecc_agent_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2018-04-08 10:15:37</sys_created_on>
+        <sys_domain>global</sys_domain>
+        <sys_domain_path>/</sys_domain_path>
+        <sys_id>a228f516db1d1300cc9b2f0e0b961986</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>PuppetEnterpriseInventory </sys_name>
+        <sys_overrides/>
+        <sys_package display_value="testpuppetapp" source="x_snc_testpuppetap">8fd30952db191300cc9b2f0e0b96191e</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="testpuppetapp">8fd30952db191300cc9b2f0e0b96191e</sys_scope>
+        <sys_update_name>ecc_agent_script_include_a228f516db1d1300cc9b2f0e0b961986</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-04-08 10:15:37</sys_updated_on>
+    </ecc_agent_script_include>
+</record_update>

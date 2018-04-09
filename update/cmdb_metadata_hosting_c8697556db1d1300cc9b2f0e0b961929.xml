@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="cmdb_metadata_hosting">
+    <cmdb_metadata_hosting action="INSERT_OR_UPDATE">
+        <child_type>x_snc_testpuppetap_u_cmdb_ci_puppet_enterprise</child_type>
+        <is_reverse>false</is_reverse>
+        <parent_type>x_snc_testpuppetap_u_cmdb_ci_puppet_enterprise_environment</parent_type>
+        <rel_type display_value="Hosted on::Hosts">5f985e0ec0a8010e00a9714f2a172815</rel_type>
+        <sys_class_name>cmdb_metadata_hosting</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2018-04-08 10:20:06</sys_created_on>
+        <sys_id>c8697556db1d1300cc9b2f0e0b961929</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name/>
+        <sys_package display_value="testpuppetapp" source="x_snc_testpuppetap">8fd30952db191300cc9b2f0e0b96191e</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="testpuppetapp">8fd30952db191300cc9b2f0e0b96191e</sys_scope>
+        <sys_update_name>cmdb_metadata_hosting_c8697556db1d1300cc9b2f0e0b961929</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-04-08 10:20:06</sys_updated_on>
+    </cmdb_metadata_hosting>
+</record_update>

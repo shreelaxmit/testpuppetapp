@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sn_capi_config_overrides">
+    <sn_capi_config_overrides action="INSERT_OR_UPDATE">
+        <cloud_api display_value="Puppet Enterprise Configuration API">b7243d52db1d1300cc9b2f0e0b9619a0</cloud_api>
+        <config_parameter display_value="Identity">7474cde00b232200f353c9bf15673a71</config_parameter>
+        <override_value>$(CloudCredential.user_name)</override_value>
+        <sys_class_name>sn_capi_config_overrides</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2018-04-08 09:59:56</sys_created_on>
+        <sys_id>44a47192db1d1300cc9b2f0e0b961963</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>$(CloudCredential.user_name)</sys_name>
+        <sys_package display_value="testpuppetapp" source="x_snc_testpuppetap">8fd30952db191300cc9b2f0e0b96191e</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="testpuppetapp">8fd30952db191300cc9b2f0e0b96191e</sys_scope>
+        <sys_update_name>sn_capi_config_overrides_44a47192db1d1300cc9b2f0e0b961963</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-04-08 09:59:56</sys_updated_on>
+    </sn_capi_config_overrides>
+</record_update>

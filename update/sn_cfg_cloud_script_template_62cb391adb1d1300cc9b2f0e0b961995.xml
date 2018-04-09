@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sn_cfg_cloud_script_template">
+    <sn_cfg_cloud_script_template action="INSERT_OR_UPDATE">
+        <content>//shell script to install puppet agent for puppet master &#13;
+&#13;
+#!/bin/sh &#13;
+&#13;
+MASTER_ENDPOINT=#CfgMgmtEndpoint# &#13;
+&#13;
+sed -i '/search/d' /etc/resolv.conf &#13;
+&#13;
+curl -k "$MASTER_ENDPOINT:8140/packages/current/install.bash"| sudo bash &#13;
+&#13;
+CMD="export PATH=$PATH:/opt/puppetlabs/puppet/bin:/opt/puppetlabs/puppet/lib:/opt/puppetlabs/puppet/bin/gem" &#13;
+&#13;
+CMD="service puppet start" &#13;
+&#13;
+PUPPET_STATUS=$(service puppet status ) &#13;
+&#13;
+echo "PUPPET_AGENT_STATUS : $PUPPET_STATUS" </content>
+        <name>InstallPuppetAgent</name>
+        <sys_class_name>sn_cfg_cloud_script_template</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2018-04-08 10:30:54</sys_created_on>
+        <sys_id>62cb391adb1d1300cc9b2f0e0b961995</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>InstallPuppetAgent</sys_name>
+        <sys_package display_value="testpuppetapp" source="x_snc_testpuppetap">8fd30952db191300cc9b2f0e0b96191e</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="testpuppetapp">8fd30952db191300cc9b2f0e0b96191e</sys_scope>
+        <sys_update_name>sn_cfg_cloud_script_template_62cb391adb1d1300cc9b2f0e0b961995</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-04-08 10:30:54</sys_updated_on>
+    </sn_cfg_cloud_script_template>
+</record_update>
